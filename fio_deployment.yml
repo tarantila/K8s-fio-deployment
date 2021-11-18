@@ -16,10 +16,10 @@ spec:
         app: fio
     spec:
       imagePullSecrets:
-       - name: your-regestry-secret
+       - name: your-registry-secret
       containers:
       - name: fio
-        image: your-docker-regestry.com/images/fio:3.28
+        image: your-docker-registry.com/images/fio:3.28
         command: ["sh"]
         args: ["-c", "while true; do echo ${HOSTNAME} && mkdir -p /scratch/${HOSTNAME} && fio /configs/fio.job --eta=never --directory=/scratch/${HOSTNAME}; sleep 15; done"]
         volumeMounts:
