@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fio
+  namespace: default
+spec:
+  serviceName: fio
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fio
+  template:
+    metadata:
+      labels:
+        app: fio
+    spec:
+      imagePullSecrets:
+      - name: your-regestry-secret
+      containers:
+      - name: fio
+        image: your-docker-regestry.com/images/fio:3.28
+        imagePullPolicy: IfNotPresent
+        command: ["sh"]
+        args: ["-c", "while true;do fio /configs/fio.job --eta=never --filename_format='$jobnum.$filenum' --directory=/scratch/; sleep 15; done"]
+        volumeMounts:
+        - name: fio-config-vol
+          mountPath: /configs
+        - name: fio-data
+          mountPath: /scratch
+      volumes:
+      - name: fio-config-vol
+        configMap:
+          name: fio-job-config
+  volumeClaimTemplates:
+  - metadata:
+      name: fio-data
+    spec:
+      storageClassName: managed-ha-nfs-storage
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 25Gi
+---

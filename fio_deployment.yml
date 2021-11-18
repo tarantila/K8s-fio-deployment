@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fio
+  namespace: default
+  labels:
+    app: fio
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: fio
+  template:
+    metadata:
+      labels:
+        app: fio
+    spec:
+      imagePullSecrets:
+       - name: your-regestry-secret
+      containers:
+      - name: fio
+        image: your-docker-regestry.com/images/fio:3.28
+        command: ["sh"]
+        args: ["-c", "while true; do echo ${HOSTNAME} && mkdir -p /scratch/${HOSTNAME} && fio /configs/fio.job --eta=never --directory=/scratch/${HOSTNAME}; sleep 15; done"]
+        volumeMounts:
+          - name: fio-config-vol
+          mountPath: /configs
+        - name: fio-data
+          mountPath: /scratch
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      volumes:
+      - name: fio-config-vol
+        configMap:
+          name: fio-job-config
+      - name: fio-data
+        persistentVolumeClaim:
+          claimName: fio-claim
+---
